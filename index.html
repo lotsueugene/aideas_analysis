@@ -373,7 +373,7 @@ const cumData = dates.map(d => { cumulative += dateCounts[d]; return cumulative;
 new Chart(document.getElementById('timeChart'), {
   type: 'line',
   data: {
-    labels: dates.map(d => { const dt = new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }),
+    labels: dates.map(d => { const dt = new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',timeZone:'UTC'}); }),
     datasets: [{
       label: 'Cumulative Submissions',
       data: cumData, fill: true,
@@ -455,7 +455,7 @@ const allFields = ['title','cover','appcat','vision','why','how','demo','learned
 articles.forEach((a, i) => {
   const d = new Date(a.date);
   const isLate = d > deadline;
-  const dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
 
   let row = `<tr class="${isLate ? 'late-row' : ''}">`;
   row += `<td>${i+1}</td>`;
