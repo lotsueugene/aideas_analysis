@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIdeas 2025 — 50 Finalists Compliance Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d2e;
+    --border: #2a2d3e;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #6366f1;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --orange: #f97316;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+
+  .header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    border-bottom: 2px solid var(--accent);
+  }
+  .header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; }
+  .header p { color: #a5b4fc; margin-top: 0.5rem; font-size: 1.05rem; }
+  .header .badge {
+    display: inline-block; margin-top: 1rem; padding: 0.3rem 1rem;
+    background: rgba(99,102,241,0.25); border: 1px solid var(--accent);
+    border-radius: 999px; font-size: 0.85rem; color: #c7d2fe;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* KPI row */
+  .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .kpi {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem; text-align: center;
+  }
+  .kpi .number { font-size: 2.2rem; font-weight: 800; }
+  .kpi .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.25rem; }
+  .kpi.green .number { color: var(--green); }
+  .kpi.red .number { color: var(--red); }
+  .kpi.yellow .number { color: var(--yellow); }
+  .kpi.accent .number { color: var(--accent); }
+  .kpi.orange .number { color: var(--orange); }
+
+  /* Section titles */
+  .section-title {
+    font-size: 1.3rem; font-weight: 700; margin: 2.5rem 0 1rem;
+    padding-bottom: 0.5rem; border-bottom: 2px solid var(--border);
+  }
+
+  /* Chart grid */
+  .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .chart-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.5rem;
+  }
+  .chart-card h3 { font-size: 1rem; margin-bottom: 1rem; color: var(--muted); }
+  .chart-card canvas { width: 100% !important; }
+
+  /* Key findings */
+  .findings {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;
+  }
+  .finding {
+    background: var(--card); border-left: 4px solid var(--accent);
+    border-radius: 0 12px 12px 0; padding: 1rem 1.25rem;
+  }
+  .finding strong { color: #a5b4fc; }
+
+  /* Issues table */
+  .issues-section { margin-bottom: 2rem; }
+  .issue-group { margin-bottom: 1.5rem; }
+  .issue-group h3 {
+    font-size: 0.95rem; color: var(--red); margin-bottom: 0.5rem;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .issue-group h3::before { content: ''; display: inline-block; width: 8px; height: 8px; background: var(--red); border-radius: 50%; }
+  .issue-group.warn h3 { color: var(--yellow); }
+  .issue-group.warn h3::before { background: var(--yellow); }
+  .issue-list {
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.75rem 1rem;
+  }
+  .issue-list li {
+    list-style: none; padding: 0.4rem 0; border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .issue-list li:last-child { border-bottom: none; }
+  .issue-list .project { color: #a5b4fc; font-weight: 600; }
+  .issue-list .detail { color: var(--muted); }
+
+  /* Heatmap table */
+  .heatmap-wrapper { overflow-x: auto; margin-bottom: 2rem; }
+  table.heatmap {
+    width: 100%; border-collapse: collapse; font-size: 0.78rem;
+    background: var(--card); border-radius: 12px; overflow: hidden;
+  }
+  table.heatmap th {
+    background: #1e1b4b; color: #c7d2fe; padding: 0.6rem 0.4rem;
+    text-align: center; font-weight: 600; position: sticky; top: 0; z-index: 2;
+    white-space: nowrap;
+  }
+  table.heatmap th:first-child { text-align: left; padding-left: 0.75rem; min-width: 160px; }
+  table.heatmap td { padding: 0.4rem; text-align: center; border-bottom: 1px solid var(--border); }
+  table.heatmap td:first-child { text-align: left; padding-left: 0.75rem; font-weight: 500; white-space: nowrap; }
+  table.heatmap tr:hover { background: rgba(99,102,241,0.08); }
+  .cell-pass { background: rgba(34,197,94,0.2); color: var(--green); }
+  .cell-warn { background: rgba(234,179,8,0.2); color: var(--yellow); }
+  .cell-fail { background: rgba(239,68,68,0.2); color: var(--red); }
+  .late-row td:first-child { color: var(--orange); }
+
+  /* Compliance bar */
+  .compliance-bar-section { margin-bottom: 2rem; }
+  .req-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+  .req-bar .label { width: 160px; font-size: 0.85rem; text-align: right; color: var(--muted); flex-shrink: 0; }
+  .req-bar .bar-bg { flex: 1; height: 28px; background: var(--border); border-radius: 6px; position: relative; overflow: hidden; }
+  .req-bar .bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; font-size: 0.75rem; font-weight: 700; color: #fff; transition: width 1s ease; }
+  .req-bar .count { width: 50px; font-size: 0.85rem; color: var(--muted); }
+
+  footer {
+    text-align: center; padding: 2rem; color: var(--muted); font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 800px) {
+    .chart-grid, .findings { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>AIdeas 2025 Competition</h1>
+  <p>50 Finalists — Compliance Audit Report</p>
+  <div class="badge">Deadline: March 13, 2026 &bull; 50 Articles Reviewed &bull; Data extracted: April 6, 2026 9:00 AM CDT</div>
+</div>
+
+<div class="container">
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi accent"><div class="number">50</div><div class="label">Total Finalists</div></div>
+    <div class="kpi green"><div class="number">94%</div><div class="label">Title Format</div></div>
+    <div class="kpi green"><div class="number">100%</div><div class="label">Cover Image</div></div>
+    <div class="kpi green"><div class="number">100%</div><div class="label">#aideas-2025 Tag</div></div>
+    <div class="kpi yellow"><div class="number">90%</div><div class="label">On-Time Submission</div></div>
+    <div class="kpi red"><div class="number">86%</div><div class="label">Region Tag</div></div>
+    <div class="kpi orange"><div class="number">76%</div><div class="label">Correct Category Tag</div></div>
+  </div>
+
+  <!-- Key Findings -->
+  <div class="section-title">Key Findings</div>
+  <div class="findings">
+    <div class="finding"><strong>60%</strong> of finalists chose <strong>Social Impact</strong> — far outnumbering all other categories combined.</div>
+    <div class="finding"><strong>APJC</strong> leads with <strong>18 entries</strong> (36%), followed by EMEA with 14 (28%).</div>
+    <div class="finding"><strong>5 articles</strong> published after the Mar 13 deadline — Vervo was <strong>6 days late</strong>.</div>
+    <div class="finding"><strong>7 articles</strong> missing proper region tags; <strong>~5</strong> use wrong category tag (#social-good vs #social-impact).</div>
+    <div class="finding"><strong>3 articles</strong> have incorrect title format — missing or malformed "AIdeas:" prefix.</div>
+    <div class="finding"><strong>All 50</strong> articles have cover images and the required #aideas-2025 tag.</div>
+  </div>
+
+  <!-- Charts -->
+  <div class="section-title">Distribution Analysis</div>
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Category Breakdown</h3>
+      <canvas id="catChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Region Breakdown</h3>
+      <canvas id="regChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Submission Timeline</h3>
+      <canvas id="timeChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Requirement Compliance Rate</h3>
+      <canvas id="compChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Compliance summary bars -->
+  <div class="section-title">Requirement Compliance (out of 50)</div>
+  <div class="compliance-bar-section" id="compBars"></div>
+
+  <!-- Flagged Issues -->
+  <div class="section-title">Flagged Issues</div>
+  <div class="issues-section">
+
+    <div class="issue-group">
+      <h3>Published After Deadline (Mar 13)</h3>
+      <ul class="issue-list">
+        <li><span class="project">Vervo Supply Chain</span> <span class="detail">— Mar 19, 2026 (6 days late)</span></li>
+        <li><span class="project">NeuroPath AI</span> <span class="detail">— Mar 14, 2026</span></li>
+        <li><span class="project">VoiceAid</span> <span class="detail">— Mar 14, 2026</span></li>
+        <li><span class="project">Vibe Matching</span> <span class="detail">— Mar 14, 2026</span></li>
+      </ul>
+    </div>
+
+    <div class="issue-group">
+      <h3>Incorrect Title Format</h3>
+      <ul class="issue-list">
+        <li><span class="project">Social Ace</span> <span class="detail">— Title is "Social Ace: Unlocking..." (missing "AIdeas:" prefix)</span></li>
+        <li><span class="project">CivicGuardian AI</span> <span class="detail">— Title starts with "# AIdeas:" (has stray # before AIdeas)</span></li>
+        <li><span class="project">Rakshak</span> <span class="detail">— Title is "Rakshak: AI-Powered..." (no "AIdeas:" prefix at all)</span></li>
+      </ul>
+    </div>
+
+    <div class="issue-group">
+      <h3>Missing / Incorrect Region Tags</h3>
+      <ul class="issue-list">
+        <li><span class="project">REGAIN</span> <span class="detail">— Uses #north-america instead of #NAMER</span></li>
+        <li><span class="project">ASET</span> <span class="detail">— No region tag</span></li>
+        <li><span class="project">Infinite Storefront</span> <span class="detail">— No region tag</span></li>
+        <li><span class="project">BIA</span> <span class="detail">— No region tag</span></li>
+        <li><span class="project">Rakshak</span> <span class="detail">— No region tag</span></li>
+        <li><span class="project">Social Ace</span> <span class="detail">— No region tag</span></li>
+      </ul>
+    </div>
+
+    <div class="issue-group warn">
+      <h3>Wrong Category Tags</h3>
+      <ul class="issue-list">
+        <li><span class="project">REGAIN</span> <span class="detail">— Uses #social-good instead of #social-impact</span></li>
+        <li><span class="project">CarbonZero</span> <span class="detail">— Uses #social-good instead of #social-impact</span></li>
+        <li><span class="project">ASET</span> <span class="detail">— Uses #social-good (not a valid category tag)</span></li>
+        <li><span class="project">Predict-Epidem</span> <span class="detail">— Uses #social-good instead of #social-impact</span></li>
+        <li><span class="project">Rakshak</span> <span class="detail">— Has both #social-impact and #social-good</span></li>
+      </ul>
+    </div>
+
+    <div class="issue-group warn">
+      <h3>Missing Key Sections</h3>
+      <ul class="issue-list">
+        <li><span class="project">MaatriSahayak</span> <span class="detail">— Missing "My Vision", "Why This Matters", "Demo", "What I Learned" (uses alternative section names)</span></li>
+        <li><span class="project">NeuroPath AI</span> <span class="detail">— Missing "Why This Matters", "How I Built This", "Demo", "What I Learned"</span></li>
+        <li><span class="project">Predict-Epidem</span> <span class="detail">— Missing "What I Learned"</span></li>
+        <li><span class="project">AI Identity Protection</span> <span class="detail">— Missing "What I Learned"</span></li>
+        <li><span class="project">FTL</span> <span class="detail">— Missing "How I Built This" (uses different name), "App Category"</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Full Heatmap Table -->
+  <div class="section-title">Full Compliance Matrix (50 Finalists)</div>
+  <div class="heatmap-wrapper">
+    <table class="heatmap" id="heatmapTable">
+      <thead>
+        <tr>
+          <th>#</th><th>Project</th><th>Published</th><th>Category</th><th>Region</th>
+          <th>Title</th><th>Cover</th><th>App Cat</th><th>Vision</th><th>Why</th>
+          <th>How</th><th>Demo</th><th>Learned</th><th>#aideas</th><th>Cat Tag</th><th>Reg Tag</th><th>On Time</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  AIdeas 2025 Competition — Compliance Audit Dashboard &bull; Data extracted April 6, 2026 9:00 AM CDT
+</footer>
+
+<script>
+// ====== DATA ======
+const articles = [
+  {n:"Ivy",cat:"Social Impact",date:"2026-02-23",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Caligo Dynamics",cat:"Social Impact",date:"2026-03-12",reg:"NAMER",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Project Anukriti",cat:"Social Impact",date:"2026-02-23",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:0.5,regtag:1},
+  {n:"Mnemos",cat:"Creative Expression",date:"2026-03-06",reg:"NAMER",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"RTC",cat:"Commercial Solutions",date:"2026-02-20",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:0.5,regtag:0.5},
+  {n:"Vervo Supply Chain",cat:"Commercial Solutions",date:"2026-03-19",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"VIGIA",cat:"Commercial Solutions",date:"2026-03-08",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Social Ace",cat:"Social Impact",date:"2026-03-07",reg:"N/A",title:0,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:0},
+  {n:"Veloquity",cat:"Commercial Solutions",date:"2026-03-13",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:0.5,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Remember Me",cat:"Social Impact",date:"2026-03-12",reg:"APJC",title:1,cover:1,appcat:1,vision:0.5,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"REGAIN",cat:"Social Impact",date:"2026-02-24",reg:"NAMER",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:0.5,learned:1,aideas:1,cattag:0,regtag:0},
+  {n:"CarbonZero",cat:"Social Impact",date:"2026-03-03",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:0.5,regtag:1},
+  {n:"Aether Health",cat:"Social Impact",date:"2026-03-12",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"CivicGuardian AI",cat:"Social Impact",date:"2026-03-07",reg:"EMEA",title:0,cover:1,appcat:0,vision:0,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"CareLens AI",cat:"Social Impact",date:"2026-03-03",reg:"NAMER",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Afrifashion 3D",cat:"Commercial Solutions",date:"2026-03-13",reg:"EMEA",title:1,cover:1,appcat:0,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"MockNest Serverless",cat:"Workplace Efficiency",date:"2026-03-13",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Whispurr",cat:"Social Impact",date:"2026-03-08",reg:"APJC",title:1,cover:1,appcat:1,vision:0.5,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"SenseSync",cat:"Social Impact",date:"2026-03-11",reg:"NAMER",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"NagrikAI",cat:"Social Impact",date:"2026-03-13",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Beyond The Box",cat:"Commercial Solutions",date:"2026-03-12",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"VERA",cat:"Social Impact",date:"2026-03-06",reg:"LATAM",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"ASET",cat:"Social Impact",date:"2026-02-18",reg:"Unknown",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:0.5,regtag:0},
+  {n:"Global Impact AI Nav",cat:"Social Impact",date:"2026-03-05",reg:"EMEA",title:1,cover:1,appcat:0,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"MaatriSahayak",cat:"Social Impact",date:"2026-02-28",reg:"APJC",title:1,cover:1,appcat:1,vision:0.5,why:0.5,how:1,demo:0.5,learned:0.5,aideas:1,cattag:1,regtag:1},
+  {n:"Predict-Epidem",cat:"Social Impact",date:"2026-03-05",reg:"LATAM",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:0.5,aideas:1,cattag:0.5,regtag:1},
+  {n:"NeuroPath AI",cat:"Social Impact",date:"2026-03-14",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:0,how:0.5,demo:0,learned:0,aideas:1,cattag:1,regtag:1},
+  {n:"CogniPath",cat:"Social Impact",date:"2026-03-04",reg:"LATAM",title:1,cover:1,appcat:0,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"LuminaLog",cat:"Commercial Solutions",date:"2026-03-06",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"RecoverMate",cat:"Social Impact",date:"2026-03-03",reg:"ANZ",title:1,cover:1,appcat:1,vision:1,why:1,how:0.5,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"VoiceAid",cat:"Social Impact",date:"2026-03-14",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"VetVoice",cat:"Workplace Efficiency",date:"2026-03-10",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:0.5,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Mornist",cat:"Daily Life Enhancement",date:"2026-03-13",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"AgriNexus AI",cat:"Social Impact",date:"2026-03-08",reg:"APJC",title:1,cover:1,appcat:0,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"DermAI Hope",cat:"Social Impact",date:"2026-03-13",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"TruthLayer",cat:"Workplace Efficiency",date:"2026-03-09",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Org Memory Decay AI",cat:"Workplace Efficiency",date:"2026-03-09",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Perspective",cat:"Social Impact",date:"2026-03-04",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Diverge",cat:"Daily Life Enhancement",date:"2026-03-13",reg:"NAMER",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Infinite Storefront",cat:"Commercial Solutions",date:"2026-02-28",reg:"Unknown",title:1,cover:1,appcat:1,vision:0.5,why:1,how:1,demo:1,learned:1,aideas:1,cattag:0.5,regtag:0},
+  {n:"RosettaCloud",cat:"Social Impact",date:"2026-03-08",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Vibe Matching",cat:"Social Impact",date:"2026-03-14",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"AI Runtime Assurance",cat:"Workplace Efficiency",date:"2026-03-13",reg:"EMEA",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"Qleam AI",cat:"Daily Life Enhancement",date:"2026-03-12",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"BIA",cat:"Unknown",date:"2026-03-13",reg:"Unknown",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:0.5,learned:1,aideas:1,cattag:0,regtag:0},
+  {n:"Rakshak",cat:"Social Impact",date:"2026-03-13",reg:"Unknown",title:0,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:0},
+  {n:"FTL",cat:"Commercial Solutions",date:"2026-03-07",reg:"NAMER",title:1,cover:1,appcat:0,vision:1,why:1,how:0.5,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"NeuroVoice",cat:"Social Impact",date:"2026-03-01",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+  {n:"AI Identity Protection",cat:"Social Impact",date:"2026-02-22",reg:"ANZ",title:1,cover:1,appcat:0,vision:1,why:1,how:1,demo:1,learned:0.5,aideas:1,cattag:1,regtag:1},
+  {n:"ReadEase AI",cat:"Social Impact",date:"2026-03-13",reg:"APJC",title:1,cover:1,appcat:1,vision:1,why:1,how:1,demo:1,learned:1,aideas:1,cattag:1,regtag:1},
+];
+
+const deadline = new Date('2026-03-13');
+const fields = ['title','cover','appcat','vision','why','how','demo','learned','aideas','cattag','regtag'];
+const fieldLabels = ['Title','Cover','App Cat','Vision','Why','How','Demo','Learned','#aideas','Cat Tag','Reg Tag'];
+
+// ====== CATEGORY CHART ======
+const catCounts = {};
+articles.forEach(a => { catCounts[a.cat] = (catCounts[a.cat]||0)+1; });
+const catLabels = Object.keys(catCounts).sort((a,b) => catCounts[b]-catCounts[a]);
+const catData = catLabels.map(l => catCounts[l]);
+const catColors = ['#6366f1','#06b6d4','#f59e0b','#10b981','#ec4899','#94a3b8'];
+
+new Chart(document.getElementById('catChart'), {
+  type: 'doughnut',
+  data: { labels: catLabels, datasets: [{ data: catData, backgroundColor: catColors, borderWidth: 0 }] },
+  options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12 } } } }
+});
+
+// ====== REGION CHART ======
+const regCounts = {};
+articles.forEach(a => { const r = (a.reg==='Unknown'||a.reg==='N/A') ? 'Missing' : a.reg; regCounts[r] = (regCounts[r]||0)+1; });
+const regLabels = Object.keys(regCounts).sort((a,b) => regCounts[b]-regCounts[a]);
+const regData = regLabels.map(l => regCounts[l]);
+const regColors = ['#6366f1','#06b6d4','#f59e0b','#10b981','#ec4899','#94a3b8'];
+
+new Chart(document.getElementById('regChart'), {
+  type: 'bar',
+  data: { labels: regLabels, datasets: [{ data: regData, backgroundColor: regColors, borderRadius: 6, borderSkipped: false }] },
+  options: {
+    responsive: true, indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#2a2d3e' } }, y: { ticks: { color: '#e2e8f0' }, grid: { display: false } } }
+  }
+});
+
+// ====== TIMELINE CHART ======
+const sorted = [...articles].sort((a,b) => new Date(a.date)-new Date(b.date));
+const dateCounts = {};
+sorted.forEach(a => { dateCounts[a.date] = (dateCounts[a.date]||0)+1; });
+const dates = Object.keys(dateCounts).sort();
+let cumulative = 0;
+const cumData = dates.map(d => { cumulative += dateCounts[d]; return cumulative; });
+
+new Chart(document.getElementById('timeChart'), {
+  type: 'line',
+  data: {
+    labels: dates.map(d => { const dt = new Date(d); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }),
+    datasets: [{
+      label: 'Cumulative Submissions',
+      data: cumData, fill: true,
+      borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.15)',
+      tension: 0.3, pointRadius: 4, pointBackgroundColor: '#6366f1'
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      annotation: {}
+    },
+    scales: {
+      x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#2a2d3e' } },
+      y: { ticks: { color: '#94a3b8' }, grid: { color: '#2a2d3e' }, beginAtZero: true }
+    }
+  }
+});
+
+// ====== COMPLIANCE RADAR ======
+const reqLabels = ['Title','Cover Image','App Category Sec','My Vision','Why This Matters','How I Built','Demo','What I Learned','#aideas-2025','Category Tag','Region Tag'];
+const reqPass = fields.map(f => {
+  let count = 0;
+  articles.forEach(a => { if(a[f] >= 1) count++; });
+  return count;
+});
+
+new Chart(document.getElementById('compChart'), {
+  type: 'radar',
+  data: {
+    labels: reqLabels,
+    datasets: [{
+      label: 'Fully Compliant (of 50)',
+      data: reqPass, fill: true,
+      borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.2)',
+      pointBackgroundColor: '#6366f1'
+    }]
+  },
+  options: {
+    responsive: true,
+    scales: { r: { min: 30, max: 50, ticks: { stepSize: 5, color: '#94a3b8', backdropColor: 'transparent' }, grid: { color: '#2a2d3e' }, pointLabels: { color: '#e2e8f0', font: { size: 10 } } } },
+    plugins: { legend: { labels: { color: '#94a3b8' } } }
+  }
+});
+
+// ====== COMPLIANCE BARS ======
+const barSection = document.getElementById('compBars');
+const allReqs = [
+  {label:'Title Format', pass:47, total:50},
+  {label:'Cover Image', pass:50, total:50},
+  {label:'App Category Section', pass:41, total:50},
+  {label:'My/Our Vision', pass:45, total:50},
+  {label:'Why This Matters', pass:48, total:50},
+  {label:'How I Built This', pass:45, total:50},
+  {label:'Demo Section', pass:44, total:50},
+  {label:'What I Learned', pass:44, total:50},
+  {label:'#aideas-2025 Tag', pass:50, total:50},
+  {label:'Category Tag (correct)', pass:38, total:50},
+  {label:'Region Tag', pass:43, total:50},
+  {label:'Published On Time', pass:45, total:50},
+];
+
+allReqs.forEach(r => {
+  const pct = (r.pass/r.total*100).toFixed(0);
+  const color = pct >= 95 ? 'var(--green)' : pct >= 85 ? 'var(--yellow)' : 'var(--red)';
+  barSection.innerHTML += `
+    <div class="req-bar">
+      <div class="label">${r.label}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${color}">${pct}%</div></div>
+      <div class="count">${r.pass}/50</div>
+    </div>`;
+});
+
+// ====== HEATMAP TABLE ======
+const tbody = document.querySelector('#heatmapTable tbody');
+const allFields = ['title','cover','appcat','vision','why','how','demo','learned','aideas','cattag','regtag'];
+
+articles.forEach((a, i) => {
+  const d = new Date(a.date);
+  const isLate = d > deadline;
+  const dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+  let row = `<tr class="${isLate ? 'late-row' : ''}">`;
+  row += `<td>${i+1}</td>`;
+  row += `<td>${a.n}</td>`;
+  row += `<td${isLate ? ' style="color:var(--red);font-weight:700"' : ''}>${dateStr}${isLate ? ' ⚠' : ''}</td>`;
+  row += `<td>${a.cat}</td>`;
+  row += `<td>${a.reg}</td>`;
+
+  allFields.forEach(f => {
+    const v = a[f];
+    const cls = v >= 1 ? 'cell-pass' : v >= 0.5 ? 'cell-warn' : 'cell-fail';
+    const sym = v >= 1 ? '✓' : v >= 0.5 ? '⚠' : '✗';
+    row += `<td class="${cls}">${sym}</td>`;
+  });
+
+  // On time
+  const otCls = isLate ? 'cell-fail' : 'cell-pass';
+  const otSym = isLate ? '✗' : '✓';
+  row += `<td class="${otCls}">${otSym}</td>`;
+
+  row += '</tr>';
+  tbody.innerHTML += row;
+});
+</script>
+
+</body>
+</html>
